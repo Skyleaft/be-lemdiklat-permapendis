@@ -22,7 +22,7 @@ public class UserRepo(IDBContext db) : IUserRepo
 
     public async Task<User> Get(string username)
     {
-        var user = await db.Users.FirstOrDefaultAsync(x => x.Username == username);
+        var user = await db.Users.Include(x=>x.UserProfile).FirstOrDefaultAsync(x => x.Username == username);
         if (user == null)
         {
             return null;

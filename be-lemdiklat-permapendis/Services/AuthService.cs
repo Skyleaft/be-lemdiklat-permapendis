@@ -32,7 +32,8 @@ public class AuthService(IUserRepo userRepo,
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new(ClaimTypes.Name, user.Username),
                 new(ClaimTypes.Email, user.UserProfile?.Email ?? ""),
-                new(ClaimTypes.Role, user.RoleId.ToString())
+                new(ClaimTypes.Role, user.RoleId.ToString()),
+                new(ClaimTypes.GivenName, user.UserProfile?.Name ?? "")
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

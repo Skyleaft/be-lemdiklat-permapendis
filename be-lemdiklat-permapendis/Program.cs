@@ -17,6 +17,7 @@ builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddTransient<IEncryptionService, EncryptionService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IAvatarService, AvatarService>();
+builder.Services.AddTransient<IClaimService, ClaimService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 
 builder.Services.AddHttpContextAccessor();

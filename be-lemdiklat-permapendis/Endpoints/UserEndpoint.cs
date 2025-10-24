@@ -31,15 +31,21 @@ public static class UserEndpoint
             .Produces(404)
             .AllowAnonymous();
                 
-        users.MapPost("/", async (CreateUserRequest request, IUserService userService) =>
+        users.MapPost("/", async (CreateUserRequest request, IUserService userService, IClaimService claimService) =>
         {
+            if (!claimService.IsInRole([1,2]))
+            {
+                return Results.Forbid();
+            }
+            
             await userService.Create(request);
             return Results.Created();
         })
         .WithName("CreateUser")
         .WithSummary("Create new user")
-        .WithDescription("Create a new user account")
-        .Produces(201);
+        .WithDescription("Create a new user account (Admin and Manager only)")
+        .Produces(201)
+        .Produces(403);
         
         users.MapPut("/{id}", async (string id, UserProfile profile, IUserService userService) =>
         {
@@ -65,9 +71,9 @@ public static class UserEndpoint
         .Produces(204)
         .Produces(400);
 
-        users.MapPost("/profile-photo", async (HttpContext context, IUserService userService, IAvatarService avatarService) =>
+        users.MapPost("/profile-photo", async (HttpContext context,IUserService userService, IAvatarService avatarService, IClaimService claimService) =>
         {
-            var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userId = claimService.GetUserId();
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             var user = await userService.Get(Guid.Parse(userId));

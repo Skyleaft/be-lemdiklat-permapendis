@@ -1,5 +1,6 @@
 using be_lemdiklat_permapendis.Services;
 using be_lemdiklat_permapendis.Dto;
+using be_lemdiklat_permapendis.Models;
 
 namespace be_lemdiklat_permapendis.Endpoints;
 
@@ -9,8 +10,14 @@ public static class AuthEndpoint
     {
         var auth = app.MapGroup("/api/auth").WithTags("Authentication");
 
-        auth.MapPost("/login", async (LoginRequest request, IAuthService authService) =>
+        auth.MapPost("/login", async (LoginRequest request, IAuthService authService, IClaimService claimService) =>
         {
+            var userId = claimService.GetUserId();
+            if (!string.IsNullOrEmpty(userId))
+            {
+                return Results.BadRequest(new LoginResponse { IsAuth = false, Message = "User already logged in" });
+            }
+            
             var result = await authService.Login(request);
             return result.IsAuth ? Results.Ok(result) : Results.Unauthorized();
         })
@@ -18,6 +25,7 @@ public static class AuthEndpoint
         .WithSummary("User login")
         .WithDescription("Authenticate user and create session cookie")
         .Produces<LoginResponse>(200)
+        .Produces<LoginResponse>(400)
         .Produces(401);
 
         auth.MapPost("/register", async (RegisterRequest request, IAuthService authService) =>
@@ -64,20 +72,15 @@ public static class AuthEndpoint
         .WithDescription("Send password reset instructions to email")
         .Produces<ServiceResponse>(200);
 
-        auth.MapGet("/me", (HttpContext context) =>
+        auth.MapGet("/me", (IClaimService claimService) =>
         {
-            if (!context.User.Identity?.IsAuthenticated ?? false)
+            var userId = claimService.GetUserId();
+            if (string.IsNullOrEmpty(userId))
             {
                 return Results.Unauthorized();
             }
 
-            var user = new
-            {
-                Id = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
-                Username = context.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value,
-                Email = context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value,
-                Role = context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
-            };
+            var user = claimService.GetClaimUser();
 
             return Results.Ok(user);
         })
@@ -85,7 +88,7 @@ public static class AuthEndpoint
         .WithName("GetCurrentUser")
         .WithSummary("Get current user")
         .WithDescription("Get authenticated user information from cookie")
-        .Produces(200)
+        .Produces<ClaimUser>(200)
         .Produces(401);
     }
 }
