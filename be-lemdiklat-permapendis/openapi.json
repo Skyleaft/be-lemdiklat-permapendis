@@ -1,0 +1,179 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Lemdiklat Permapendis API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/ping": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "Find users",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FindRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateUserRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Bad Request" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "Get user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "400": { "description": "Bad Request" },
+          "404": { "description": "Not Found" }
+        }
+      },
+      "put": {
+        "summary": "Update user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserProfile" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": { "description": "Bad Request" }
+        }
+      },
+      "delete": {
+        "summary": "Delete user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": { "description": "Bad Request" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "username": { "type": "string", "maxLength": 50 },
+          "password": { "type": "string", "maxLength": 255 },
+          "passwordSalt": { "type": "string", "maxLength": 255 },
+          "roleId": { "type": "string", "format": "uuid" },
+          "role": { "$ref": "#/components/schemas/Role" },
+          "userProfileId": { "type": "string", "format": "uuid" },
+          "userProfile": { "$ref": "#/components/schemas/UserProfile" }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "level": { "type": "integer" }
+        }
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string", "maxLength": 100 },
+          "email": { "type": "string", "maxLength": 255 },
+          "phone": { "type": "string", "maxLength": 20 },
+          "address": { "type": "string", "maxLength": 500 },
+          "city": { "type": "string", "maxLength": 100 },
+          "profilePicture": { "type": "string", "maxLength": 255 }
+        }
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string" },
+          "username": { "type": "string" },
+          "password": { "type": "string" }
+        },
+        "required": ["name", "email", "username", "password"]
+      },
+      "FindRequest": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "integer" },
+          "size": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

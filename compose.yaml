@@ -1,0 +1,7 @@
+﻿services:
+  be-lemdiklat-permapendis:
+    image: be-lemdiklat-permapendis
+    build:
+      context: .
+      dockerfile: be-lemdiklat-permapendis/Dockerfile
+
