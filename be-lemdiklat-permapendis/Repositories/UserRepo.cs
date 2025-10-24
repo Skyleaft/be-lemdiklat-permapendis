@@ -22,7 +22,7 @@ public class UserRepo(IDBContext db) : IUserRepo
 
     public async Task<User> Get(string username)
     {
-        var user = await db.Users.FindAsync(username);
+        var user = await db.Users.FirstOrDefaultAsync(x => x.Username == username);
         if (user == null)
         {
             return null;
@@ -42,7 +42,7 @@ public class UserRepo(IDBContext db) : IUserRepo
 
     public async Task<User> Update(User user)
     {
-        var existingUser = await db.Users.FindAsync(user.Id);
+        var existingUser = await db.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
         if (existingUser == null)
         {
             return null;
@@ -57,7 +57,7 @@ public class UserRepo(IDBContext db) : IUserRepo
 
     public async Task Delete(Guid id)
     {
-        var user = await db.Users.FindAsync(id);
+        var user = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
         if (user == null)
         {
             return;

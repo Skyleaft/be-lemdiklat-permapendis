@@ -12,4 +12,5 @@ public interface IUserService
     Task<User> ValidateUser(string username, string password);
     Task<User> GetUserByEmail(string email);
     Task<IEnumerable<User>> Find(FindRequest findRequest);
+    Task UpdateProfilePhoto(Guid userId, string fileName);
 }

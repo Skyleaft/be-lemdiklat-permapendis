@@ -77,4 +77,15 @@ public class UserService(IUserRepo userRepo, IEncryptionService encryptionServic
     {
         return await userRepo.GetAll();
     }
+
+    public async Task UpdateProfilePhoto(Guid userId, string fileName)
+    {
+        var user = await userRepo.Get(userId);
+        if (user == null) throw new Exception("User not found");
+        
+        if (user.UserProfile == null) user.UserProfile = new UserProfile();
+        user.UserProfile.ProfilePicture = fileName;
+        
+        await userRepo.Update(user);
+    }
 }

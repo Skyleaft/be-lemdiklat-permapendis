@@ -19,4 +19,7 @@ public class User
     public Role? Role { get; set; }
     public Guid UserProfileId { get; set; }
     public UserProfile? UserProfile { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public bool IsActivated { get; set; }
 }
