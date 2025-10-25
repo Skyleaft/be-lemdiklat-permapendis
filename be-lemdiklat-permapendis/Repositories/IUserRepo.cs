@@ -1,4 +1,5 @@
-﻿using be_lemdiklat_permapendis.Models;
+﻿using be_lemdiklat_permapendis.Dto;
+using be_lemdiklat_permapendis.Models;
 
 namespace be_lemdiklat_permapendis.Repositories;
 
@@ -9,5 +10,5 @@ public interface IUserRepo
     Task<User> Create(User user);
     Task<User> Update(User user);
     Task Delete(Guid id);
-    Task<IEnumerable<User>> GetAll();
+    Task<PaginatedResponse<User>> Find(FindRequest request);
 }

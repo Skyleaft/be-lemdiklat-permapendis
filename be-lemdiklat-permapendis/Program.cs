@@ -13,10 +13,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IDBContext, AppDbContext>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
+builder.Services.AddScoped<IArticleRepo, ArticleRepo>();
+builder.Services.AddScoped<IArticleCategoryRepo, ArticleCategoryRepo>();
 
 builder.Services.AddTransient<IEncryptionService, EncryptionService>();
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IArticleService, ArticleService>();
+builder.Services.AddTransient<IArticleCategoryService, ArticleCategoryService>();
 builder.Services.AddTransient<IAvatarService, AvatarService>();
+builder.Services.AddTransient<IThumbnailService, ThumbnailService>();
 builder.Services.AddTransient<IClaimService, ClaimService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 
@@ -81,6 +86,8 @@ app.UseAuthorization();
 
 app.MapUserEndpoints();
 app.MapAuthEndpoints();
+app.MapArticleEndpoints();
+app.MapArticleCategoryEndpoints();
 app.MapGet("/ping", () => $"Phoonk!! - {DateTime.Now}");
 
 app.MapGet("/openapi.json", () => Results.File("openapi.json", "application/json"));

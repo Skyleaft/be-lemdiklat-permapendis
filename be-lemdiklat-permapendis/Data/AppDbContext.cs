@@ -11,6 +11,8 @@ public class AppDbContext : DbContext, IDBContext
     public DbSet<User> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<Article> Articles { get; set; }
+    public DbSet<ArticleCategory> ArticleCategories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +38,11 @@ public class AppDbContext : DbContext, IDBContext
         });
 
         modelBuilder.Entity<UserProfile>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+        });
+        
+        modelBuilder.Entity<Article>(entity =>
         {
             entity.HasKey(e => e.Id);
         });

@@ -1,4 +1,5 @@
 ﻿using be_lemdiklat_permapendis.Data;
+using be_lemdiklat_permapendis.Dto;
 using be_lemdiklat_permapendis.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -69,8 +70,29 @@ public class UserRepo(IDBContext db) : IUserRepo
         }
     }
 
-    public async Task<IEnumerable<User>> GetAll()
+    public async Task<PaginatedResponse<User>> Find(FindRequest request)
     {
-        return await db.Users.ToListAsync();
+        var query = db.Users.Include(x => x.UserProfile).AsQueryable();
+        
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            query = query.Where(x => x.Username.Contains(request.Search) || 
+                                   x.UserProfile.Name.Contains(request.Search) ||
+                                   x.UserProfile.Email.Contains(request.Search));
+        }
+        
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync();
+            
+        return new PaginatedResponse<User>
+        {
+            Data = items,
+            TotalCount = totalCount,
+            Page = request.Page,
+            PageSize = request.PageSize
+        };
     }
 }

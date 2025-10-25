@@ -73,9 +73,9 @@ public class UserService(IUserRepo userRepo, IEncryptionService encryptionServic
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<User>> Find(FindRequest findRequest)
+    public async Task<PaginatedResponse<User>> Find(FindRequest findRequest)
     {
-        return await userRepo.GetAll();
+        return await userRepo.Find(findRequest);
     }
 
     public async Task UpdateProfilePhoto(Guid userId, string fileName)
