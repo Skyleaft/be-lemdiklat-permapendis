@@ -9,7 +9,7 @@ public class UserRepo(IDBContext db) : IUserRepo
 {
     public async Task<User> Get(Guid id)
     {
-        var user = await db.Users.Include(x=>x.UserProfile)
+        var user = await db.Users.Include(x=>x.Role).Include(x=>x.UserProfile)
             .FirstOrDefaultAsync(x=>x.Id==id);
         if (user == null)
         {

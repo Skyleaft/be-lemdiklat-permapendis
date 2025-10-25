@@ -1,0 +1,354 @@
+openapi: 3.0.3
+info:
+  title: Article API
+  description: API for managing articles with thumbnail support
+  version: 1.0.0
+servers:
+  - url: /api
+    description: API base path
+
+paths:
+  /articles/find:
+    post:
+      tags:
+        - Articles
+      summary: Find articles
+      description: Search articles with criteria
+      operationId: FindArticles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindRequest'
+      responses:
+        '200':
+          description: Articles found successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponseArticle'
+
+  /articles/{id}:
+    get:
+      tags:
+        - Articles
+      summary: Get article by ID
+      description: Retrieve article by ID
+      operationId: GetArticle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Article retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '404':
+          description: Article not found
+
+  /articles:
+    post:
+      tags:
+        - Articles
+      summary: Create new article
+      description: Create a new article with thumbnail filename
+      operationId: CreateArticle
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateArticleDto'
+      responses:
+        '201':
+          description: Article created successfully
+        '400':
+          description: Bad request
+
+  /articles/with-thumbnail:
+    post:
+      tags:
+        - Articles
+      summary: Create article with thumbnail
+      description: Create a new article and upload thumbnail in one request
+      operationId: CreateArticleWithThumbnail
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                author:
+                  type: string
+                categoryId:
+                  type: integer
+                  format: int32
+                thumbnailFile:
+                  type: string
+                  format: binary
+              required:
+                - title
+                - categoryId
+      responses:
+        '201':
+          description: Article created successfully
+        '400':
+          description: Bad request
+
+  /articles/{id}:
+    put:
+      tags:
+        - Articles
+      summary: Update article
+      description: Update article information
+      operationId: UpdateArticle
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateArticleDto'
+      responses:
+        '204':
+          description: Article updated successfully
+        '400':
+          description: Bad request
+
+    delete:
+      tags:
+        - Articles
+      summary: Delete article
+      description: Delete article and its thumbnail
+      operationId: DeleteArticle
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: Article deleted successfully
+        '400':
+          description: Bad request
+
+  /articles/thumbnail:
+    post:
+      tags:
+        - Articles
+      summary: Upload thumbnail
+      description: Upload article thumbnail
+      operationId: UploadThumbnail
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                thumbnail:
+                  type: string
+                  format: binary
+              required:
+                - thumbnail
+      responses:
+        '200':
+          description: Thumbnail uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoUploadResponse'
+        '400':
+          description: Bad request
+
+  /articles/thumbnail/{fileName}:
+    get:
+      tags:
+        - Articles
+      summary: Get thumbnail
+      description: Retrieve article thumbnail
+      operationId: GetThumbnail
+      parameters:
+        - name: fileName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thumbnail retrieved successfully
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Thumbnail not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    FindRequest:
+      type: object
+      properties:
+        search:
+          type: string
+          default: ""
+        page:
+          type: integer
+          format: int32
+          default: 1
+        pageSize:
+          type: integer
+          format: int32
+          default: 10
+        sort:
+          type: string
+          default: ""
+        order:
+          type: string
+          default: ""
+        filter:
+          type: string
+          default: ""
+
+    Article:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 255
+        content:
+          type: string
+        author:
+          type: string
+          maxLength: 100
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        isPublished:
+          type: boolean
+        categoryId:
+          type: integer
+          format: int32
+        thumbnail:
+          type: string
+          maxLength: 255
+
+    CreateArticleDto:
+      type: object
+      required:
+        - title
+        - categoryId
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+          nullable: true
+        author:
+          type: string
+          nullable: true
+        categoryId:
+          type: integer
+          format: int32
+        thumbnail:
+          type: string
+          nullable: true
+
+    UpdateArticleDto:
+      type: object
+      required:
+        - title
+        - categoryId
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+          nullable: true
+        categoryId:
+          type: integer
+          format: int32
+        thumbnail:
+          type: string
+          nullable: true
+        isPublished:
+          type: boolean
+
+    PaginatedResponseArticle:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
+        totalCount:
+          type: integer
+          format: int32
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+
+    PhotoUploadResponse:
+      type: object
+      properties:
+        fileName:
+          type: string
+        message:
+          type: string

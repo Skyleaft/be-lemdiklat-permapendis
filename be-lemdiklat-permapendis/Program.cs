@@ -30,13 +30,63 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/api/auth/login";
-        options.LogoutPath = "/api/auth/logout";
-        options.ExpireTimeSpan = TimeSpan.FromDays(7);
-        options.SlidingExpiration = true;
+        var cookieConfig = builder.Configuration.GetSection("Cookie");
+        options.Cookie.Name = cookieConfig.GetValue<string>("Name") ?? "auth";
+        options.ExpireTimeSpan = TimeSpan.FromDays(cookieConfig.GetValue<int>("ExpireDays", 7));
+        options.SlidingExpiration = cookieConfig.GetValue<bool>("SlidingExpiration", true);
+        options.Cookie.HttpOnly = cookieConfig.GetValue<bool>("HttpOnly", true);
+        var isSecure = cookieConfig.GetValue<bool>("Secure", false);
+        options.Cookie.SecurePolicy = isSecure ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SameSite = Enum.Parse<SameSiteMode>(cookieConfig.GetValue<string>("SameSite") ?? "Lax");
+        
+        // Return 401 instead of redirecting for API endpoints
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = 401;
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = 403;
+            return Task.CompletedTask;
+        };
     });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddCors(options =>
+{
+    var corsConfig = builder.Configuration.GetSection("Cors");
+    options.AddDefaultPolicy(policy =>
+    {
+        var origins = corsConfig.GetSection("AllowedOrigins").Get<string[]>() ?? ["*"];
+        var methods = corsConfig.GetSection("AllowedMethods").Get<string[]>() ?? ["*"];
+        var headers = corsConfig.GetSection("AllowedHeaders").Get<string[]>() ?? ["*"];
+        var allowCredentials = corsConfig.GetValue<bool>("AllowCredentials");
+
+        if (origins.Contains("*"))
+        {
+            policy.AllowAnyOrigin();
+            // Cannot use AllowCredentials with AllowAnyOrigin
+        }
+        else
+        {
+            policy.WithOrigins(origins);
+            if (allowCredentials)
+                policy.AllowCredentials();
+        }
+
+        if (methods.Contains("*"))
+            policy.AllowAnyMethod();
+        else
+            policy.WithMethods(methods);
+
+        if (headers.Contains("*"))
+            policy.AllowAnyHeader();
+        else
+            policy.WithHeaders(headers);
+    });
+});
 
 #if !AOT
 builder.Services.AddEndpointsApiExplorer();
@@ -79,6 +129,7 @@ if (app.Environment.IsDevelopment())
 }
 #endif
 
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
