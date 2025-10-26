@@ -9,29 +9,13 @@ public class UserRepo(IDBContext db) : IUserRepo
 {
     public async Task<User> Get(Guid id)
     {
-        var user = await db.Users.Include(x=>x.Role).Include(x=>x.UserProfile)
-            .FirstOrDefaultAsync(x=>x.Id==id);
-        if (user == null)
-        {
-            return null;
-        }
-        else
-        {
-            return user;
-        }
+        return await db.Users.Include(x=>x.Role).Include(x=>x.UserProfile)
+            .AsNoTracking().FirstOrDefaultAsync(x=>x.Id==id);
     }
 
     public async Task<User> Get(string username)
     {
-        var user = await db.Users.Include(x=>x.UserProfile).FirstOrDefaultAsync(x => x.Username == username);
-        if (user == null)
-        {
-            return null;
-        }
-        else
-        {
-            return user;
-        }
+        return await db.Users.Include(x=>x.UserProfile).AsNoTracking().FirstOrDefaultAsync(x => x.Username == username);
     }
 
     public async Task<User> Create(User user)
@@ -43,30 +27,47 @@ public class UserRepo(IDBContext db) : IUserRepo
 
     public async Task<User> Update(User user)
     {
-        var existingUser = await db.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
+        var existingUser = await db.Users.Include(x=>x.UserProfile).FirstOrDefaultAsync(x => x.Id == user.Id);
         if (existingUser == null)
         {
             return null;
         }
         else
         {
-            existingUser.UserProfile = user.UserProfile;
-            await db.SaveChangesAsync();
-            return existingUser;
+            try
+            {
+                existingUser.UserProfile.Name = user.UserProfile.Name;
+                existingUser.UserProfile.Email = user.UserProfile.Email;
+                existingUser.UserProfile.Phone = user.UserProfile.Phone;
+                existingUser.UserProfile.Address = user.UserProfile.Address;
+                existingUser.UserProfile.City = user.UserProfile.City;
+                existingUser.UserProfile.ProfilePicture = user.UserProfile.ProfilePicture;
+                existingUser.UpdatedAt = user.UpdatedAt;
+                existingUser.IsActivated = user.IsActivated;
+                await db.SaveChangesAsync();
+                return existingUser;
+            }
+            catch (DbUpdateException)
+            {
+                throw;
+            }
         }
     }
 
     public async Task Delete(Guid id)
     {
-        var user = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
-        if (user == null)
+        try
         {
-            return;
+            var user = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
+            if (user != null)
+            {
+                db.Users.Remove(user);
+                await db.SaveChangesAsync();
+            }
         }
-        else
+        catch (DbUpdateException)
         {
-            db.Users.Remove(user);
-            await db.SaveChangesAsync();
+            throw;
         }
     }
 

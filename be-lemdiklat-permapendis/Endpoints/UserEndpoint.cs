@@ -83,7 +83,7 @@ public static class UserEndpoint
             var file = form.Files["photo"];
             if (file == null || file.Length == 0) return Results.BadRequest("No file uploaded");
 
-            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png" };
+            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png","image/webp","image/svg" };
             if (!allowedTypes.Contains(file.ContentType)) return Results.BadRequest("Invalid file type");
 
             // Delete old profile photo

@@ -57,7 +57,7 @@ public static class ArticleEndpoint
             
             if (dto.ThumbnailFile != null && dto.ThumbnailFile.Length > 0)
             {
-                var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png" };
+                var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png","image/webp","image/svg" };
                 if (!allowedTypes.Contains(dto.ThumbnailFile.ContentType)) 
                     return Results.BadRequest("Invalid file type");
                     
@@ -106,7 +106,7 @@ public static class ArticleEndpoint
             var file = form.Files["thumbnail"];
             if (file == null || file.Length == 0) return Results.BadRequest("No file uploaded");
 
-            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png" };
+            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png","image/webp","image/svg" };
             if (!allowedTypes.Contains(file.ContentType)) return Results.BadRequest("Invalid file type");
 
             var fileName = await thumbnailService.CompressToWebPAsync(file);

@@ -6,6 +6,8 @@
       dockerfile: be-lemdiklat-permapendis/Dockerfile
     ports:
       - "5001:5001"
+    volumes:
+      - ./uploads:/app/uploads
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=lemdiklat_permapendis;Username=postgres;Password=postgres
       - Cors__AllowedOrigins__0=http://localhost:3000

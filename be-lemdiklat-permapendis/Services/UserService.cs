@@ -41,6 +41,7 @@ public class UserService(IUserRepo userRepo, IEncryptionService encryptionServic
             throw new Exception("User not found");
         }
         currentUser.UserProfile = profile;
+        currentUser.UpdatedAt = DateTime.UtcNow;
         await userRepo.Update(currentUser);
     }
 
@@ -85,6 +86,7 @@ public class UserService(IUserRepo userRepo, IEncryptionService encryptionServic
         
         if (user.UserProfile == null) user.UserProfile = new UserProfile();
         user.UserProfile.ProfilePicture = fileName;
+        user.UpdatedAt = DateTime.UtcNow;
         
         await userRepo.Update(user);
     }
