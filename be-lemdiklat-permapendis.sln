@@ -5,6 +5,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5207B6DA-4F68-44C3-A8AA-1CD30F5E51F8}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
+		compose.override.yaml = compose.override.yaml
 	EndProjectSection
 EndProject
 Global
