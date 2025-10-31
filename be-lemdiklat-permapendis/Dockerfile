@@ -19,4 +19,7 @@ RUN dotnet publish "./be-lemdiklat-permapendis.csproj" -c $BUILD_CONFIGURATION -
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+USER root
+RUN mkdir -p /app/uploads/profile-photos && chown -R $APP_UID:$APP_UID /app/uploads
+USER $APP_UID
 ENTRYPOINT ["dotnet", "be-lemdiklat-permapendis.dll"]
