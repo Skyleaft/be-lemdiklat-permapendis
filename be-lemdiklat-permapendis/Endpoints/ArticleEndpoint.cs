@@ -29,6 +29,18 @@ public static class ArticleEndpoint
             .Produces<Article>(200)
             .Produces(404)
             .AllowAnonymous();
+
+        articles.MapGet("/slug/{slug}", async (string slug, IArticleService articleService) =>
+            {
+                var article = await articleService.GetBySlug(slug);
+                return article is not null ? Results.Ok(article) : Results.NotFound();
+            })
+            .WithName("GetArticleBySlug")
+            .WithSummary("Get article by slug")
+            .WithDescription("Retrieve article by slug")
+            .Produces<Article>(200)
+            .Produces(404)
+            .AllowAnonymous();
                 
         articles.MapPost("/", async (CreateArticleDto request, IArticleService articleService) =>
         {

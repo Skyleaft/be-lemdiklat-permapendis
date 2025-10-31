@@ -4,11 +4,16 @@ using be_lemdiklat_permapendis.Repositories;
 
 namespace be_lemdiklat_permapendis.Services;
 
-public class ArticleService(IArticleRepo articleRepo, IThumbnailService thumbnailService) : IArticleService
+public class ArticleService(IArticleRepo articleRepo, IThumbnailService thumbnailService, IClaimService claimService) : IArticleService
 {
     public async Task<Article> Get(int id)
     {
         return await articleRepo.Get(id);
+    }
+
+    public async Task<Article> GetBySlug(string slug)
+    {
+        return await articleRepo.GetBySlug(slug);
     }
 
     public async Task<ServiceResponse> Create(CreateArticleDto articleDto)
@@ -20,7 +25,7 @@ public class ArticleService(IArticleRepo articleRepo, IThumbnailService thumbnai
                 Title = articleDto.Title,
                 Slug = GenerateSlug(articleDto.Title),
                 Content = articleDto.Content,
-                Author = articleDto.Author,
+                Author = claimService.GetProfileName(),
                 CategoryId = articleDto.CategoryId,
                 Thumbnail = articleDto.Thumbnail,
                 CreatedAt = DateTime.UtcNow,

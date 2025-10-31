@@ -12,6 +12,11 @@ public class ArticleRepo(IDBContext db) : IArticleRepo
         return await db.Articles.FirstOrDefaultAsync(x => x.Id == id);
     }
 
+    public async Task<Article> GetBySlug(string slug)
+    {
+        return await db.Articles.FirstOrDefaultAsync(x => x.Slug == slug);
+    }
+
     public async Task<Article> Create(Article article)
     {
         await db.Articles.AddAsync(article);
@@ -51,9 +56,60 @@ public class ArticleRepo(IDBContext db) : IArticleRepo
     {
         var query = db.Articles.AsQueryable();
         
+        // Search filter
         if (!string.IsNullOrEmpty(request.Search))
         {
-            query = query.Where(x => x.Title.Contains(request.Search) || x.Content.Contains(request.Search));
+            query = query.Where(x => x.Title.Contains(request.Search) || x.Content.Contains(request.Search) || x.Author.Contains(request.Search));
+        }
+        
+        // Additional filters
+        if (!string.IsNullOrEmpty(request.Filter))
+        {
+            var filters = request.Filter.Split(',');
+            foreach (var filter in filters)
+            {
+                var parts = filter.Split(':');
+                if (parts.Length == 2)
+                {
+                    var field = parts[0].Trim().ToLower();
+                    var value = parts[1].Trim();
+                    
+                    switch (field)
+                    {
+                        case "categoryid":
+                            if (int.TryParse(value, out int categoryId))
+                                query = query.Where(x => x.CategoryId == categoryId);
+                            break;
+                        case "ispublished":
+                            if (bool.TryParse(value, out bool isPublished))
+                                query = query.Where(x => x.IsPublished == isPublished);
+                            break;
+                        case "author":
+                            query = query.Where(x => x.Author.Contains(value));
+                            break;
+                    }
+                }
+            }
+        }
+        
+        // Sorting
+        if (!string.IsNullOrEmpty(request.Sort))
+        {
+            var isDescending = !string.IsNullOrEmpty(request.Order) && request.Order.ToLower() == "desc";
+            
+            query = request.Sort.ToLower() switch
+            {
+                "title" => isDescending ? query.OrderByDescending(x => x.Title) : query.OrderBy(x => x.Title),
+                "author" => isDescending ? query.OrderByDescending(x => x.Author) : query.OrderBy(x => x.Author),
+                "createdat" => isDescending ? query.OrderByDescending(x => x.CreatedAt) : query.OrderBy(x => x.CreatedAt),
+                "updatedat" => isDescending ? query.OrderByDescending(x => x.UpdatedAt) : query.OrderBy(x => x.UpdatedAt),
+                "categoryid" => isDescending ? query.OrderByDescending(x => x.CategoryId) : query.OrderBy(x => x.CategoryId),
+                _ => isDescending ? query.OrderByDescending(x => x.Id) : query.OrderBy(x => x.Id)
+            };
+        }
+        else
+        {
+            query = query.OrderByDescending(x => x.CreatedAt); // Default sort
         }
         
         var totalCount = await query.CountAsync();
