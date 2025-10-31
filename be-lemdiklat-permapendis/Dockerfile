@@ -1,5 +1,4 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-USER $APP_UID
 WORKDIR /app
 EXPOSE 5001
 
@@ -19,7 +18,5 @@ RUN dotnet publish "./be-lemdiklat-permapendis.csproj" -c $BUILD_CONFIGURATION -
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-USER root
-RUN mkdir -p /app/uploads/profile-photos && chown -R $APP_UID:$APP_UID /app/uploads
-USER $APP_UID
+RUN mkdir -p /app/uploads/profile-photos
 ENTRYPOINT ["dotnet", "be-lemdiklat-permapendis.dll"]
